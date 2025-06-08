@@ -6,26 +6,30 @@ using UnityEngine;
 
 public class RouletteController : MonoBehaviour
 {
-    [Tooltip("重ねるルーレットの数")]
-    [SerializeField] private int numberOfWheels = 5;
+    [System.Serializable]
+    public struct RouletteColorData
+    {
+        public Color fowardColor; // 360要素のColor
+        public Color backwardColor; // 360要素のColor
+        public float fowardRatio; // fowardColorの比率（0～1）
+        //public Color[] colors; // ルーレットの色データ
+        public int divisionCount; // 分割数
+        public int baseSpeed; // 基本回転速度
+        public int randomSpeed; // ランダム回転速度
+        public RouletteColorData(Color foward, Color backward, float fowardRatio, int division, int baseSpeed, int randomSpeed)
+        {
+        this.fowardColor = foward;
+        this.backwardColor = backward;
+        this.fowardRatio = fowardRatio;
+        this.divisionCount = division;
+        this.baseSpeed = baseSpeed;
+        this.randomSpeed = randomSpeed;
+        }
+    }
+    [Tooltip("ルーレットの色データセット（ScriptableObject）")]
+    [SerializeField] private RouletteColorDataSet rouletteColorDataSet;
 
-    [Tooltip("ルーレットの色データ（当たり色）")]
-    [SerializeField] private
-    Color[] paintedColors ={
-        new Color(1.0f, 0.0f, 0.0f, 1f), // 当たり色
-        new Color(0.0f, 1.0f, 0.0f, 1f), // 当たり色
-        new Color(0.0f, 0.0f, 1.0f, 1f), // 当たり色
-    };
-    [Tooltip("ルーレットの分割数")]
-    [SerializeField] private int[]  divisionCount = {
-        4,7,12
-    }; // 分割数（例: 4, 7, 12）
-
-    [Tooltip("ルーレットの回転速度（度/秒）の最小値")]
-    [SerializeField] private float minSpeed = 50f;
-
-    [Tooltip("ルーレットの回転速度（度/秒）の最大値")]
-    [SerializeField] private float maxSpeed = 200f;
+    private RouletteColorData[] RouletteColorDataArray => rouletteColorDataSet != null ? rouletteColorDataSet.colorDataArray : null;
 
     [Tooltip("ルーレット間のZ軸方向の距離")]
     [SerializeField] private float layerGap = 0.1f;
@@ -58,14 +62,27 @@ public class RouletteController : MonoBehaviour
         // シェーダーのTintColorを白（ニュートラル）に設定
         // これにより頂点カラーがそのままの色で表示される
         additiveMaterial.SetColor("_TintColor", Color.white);
-
+        var numberOfWheels = RouletteColorDataArray?.Length ?? 0;
+        if (numberOfWheels <= 0)
+        {
+            Debug.Log("No roulette data found.");
+            return;
+        }
+        var colorDataArray = RouletteColorDataArray;
+        if (colorDataArray == null)
+        {
+            Debug.Log("DataArray is not found");
+            return;
+        }
         for (int i = 0; i < numberOfWheels; i++)
         {
+            Debug.Log(colorDataArray[i].fowardColor);
             // 1. ルーレットの色データを生成
             Color[] colors = GetStripeTable(
-                paintedColors[i], // 当たり色
-                new Color(0f, 0f, 0f, 1f),   // ハズレ色（黒）
-                divisionCount[i]         // 分割数
+                colorDataArray[i].fowardColor,
+                colorDataArray[i].backwardColor,
+                colorDataArray[i].fowardRatio,
+                colorDataArray[i].divisionCount
             );
             _wheelColorData.Add(colors);
 
@@ -84,7 +101,11 @@ public class RouletteController : MonoBehaviour
 
             // 5. リストに追加
             _rouletteWheels.Add(wheel);
-            _rotationSpeeds.Add(UnityEngine.Random.Range(minSpeed, maxSpeed));
+            _rotationSpeeds.Add(
+                UnityEngine.Random.Range(
+                colorDataArray[i].baseSpeed -colorDataArray[i].randomSpeed,
+                colorDataArray[i].baseSpeed +colorDataArray[i].randomSpeed
+                    ));
         }
     }
 
@@ -137,43 +158,45 @@ public class RouletteController : MonoBehaviour
     /// <param name="color2">2色目の色</param>
     /// <param name="divisionCount">円をいくつの縞模様に分割するか</param>
     /// <returns>360要素のColor配列</returns>
-    private Color[] GetStripeTable(Color color1, Color color2, int divisionCount)
+private Color[] GetStripeTable(Color color1, Color color2, float ratio, int divisionCount)
+{
+    if (divisionCount <= 0)
     {
-        // divisionCountが0以下の場合、エラーを防ぐ
-        if (divisionCount <= 0)
-        {
-            Debug.LogError("分割数（divisionCount）は1以上である必要があります。");
-            // エラーケースとして、color1単色の配列を返す
-            divisionCount = 1;
-        }
-
-        Color[] colors = new Color[360];
-
-        // 1つの色の帯が何°分（配列の要素数）になるかを計算
-        // 例: divisionCountが12なら、360/12 = 30要素ごと
-        int segmentSize = 360 / divisionCount;
-        if (segmentSize == 0) segmentSize = 1; // divisionCountが360を超える場合の対策
-
-        for (int j = 0; j < 360; j++)
-        {
-            // 現在の角度(j)が、何番目のセグメント（色の帯）に属するかを計算
-            int segmentIndex = j / segmentSize;
-
-            // セグメントの番号が偶数か奇数かによって色を決定する
-            if (segmentIndex % 2 == 0)
-            {
-                // 偶数番目の帯は color1
-                colors[j] = color1;
-            }
-            else
-            {
-                // 奇数番目の帯は color2
-                colors[j] = color2;
-            }
-        }
-
-        return colors;
+        Debug.LogError("分割数（divisionCount）は1以上である必要があります。");
+        divisionCount = 1;
     }
+
+    Color[] colors = new Color[360];
+
+    // 1つのセグメントのサイズ
+    int segmentSize = 360 / divisionCount;
+    if (segmentSize == 0) segmentSize = 1;
+
+    int color1Length = Mathf.RoundToInt(segmentSize * ratio);
+    int color2Length = segmentSize - color1Length;
+
+    int idx = 0;
+    for (int seg = 0; seg < divisionCount; seg++)
+    {
+        // color1部分
+        for (int k = 0; k < color1Length && idx < 360; k++, idx++)
+        {
+            colors[idx] = color1;
+        }
+        // color2部分
+        for (int k = 0; k < color2Length && idx < 360; k++, idx++)
+        {
+            colors[idx] = color2;
+        }
+    }
+    // 余りがあれば最後にcolor2で埋める
+    while (idx < 360)
+    {
+        colors[idx++] = color2;
+    }
+
+    return colors;
+}
 
 
     /// <summary>

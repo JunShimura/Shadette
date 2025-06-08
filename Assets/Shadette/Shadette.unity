@@ -665,14 +665,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 997bf8ad2ee3c40de881df3a853f97cd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  numberOfWheels: 3
-  paintedColors:
-  - {r: 1, g: 0, b: 0, a: 1}
-  - {r: 0, g: 1, b: 0, a: 1}
-  - {r: 0, g: 0, b: 1, a: 1}
-  divisionCount: 04000000070000000c000000
-  minSpeed: 20
-  maxSpeed: 100
+  rouletteColorDataSet: {fileID: 11400000, guid: b88543e55e7d044d0b2dd3fc2f17373a, type: 2}
   layerGap: 0.1
 --- !u!1 &2081194138
 GameObject:
