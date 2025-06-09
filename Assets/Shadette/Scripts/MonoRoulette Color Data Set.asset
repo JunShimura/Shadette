@@ -1,0 +1,33 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ea45102854c89442193c47513c773bf9, type: 3}
+  m_Name: MonoRoulette Color Data Set
+  m_EditorClassIdentifier: 
+  colorDataArray:
+  - fowardColor: {r: 0.26415092, g: 0.26415092, b: 0.26415092, a: 1}
+    backwardColor: {r: 0, g: 0, b: 0, a: 0}
+    fowardRatio: 0.28
+    divisionCount: 4
+    baseSpeed: 580
+    randomSpeed: 0
+  - fowardColor: {r: 0.13207549, g: 0.13145249, b: 0.13145249, a: 1}
+    backwardColor: {r: 0, g: 0, b: 0, a: 0}
+    fowardRatio: 0.125
+    divisionCount: 5
+    baseSpeed: 100
+    randomSpeed: 0
+  - fowardColor: {r: 0.1981132, g: 0.1981132, b: 0.1981132, a: 1}
+    backwardColor: {r: 0, g: 0, b: 0, a: 0}
+    fowardRatio: 0.128
+    divisionCount: 7
+    baseSpeed: -70
+    randomSpeed: 0

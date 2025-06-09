@@ -78,10 +78,16 @@ public class RouletteController : MonoBehaviour
         {
             Debug.Log(colorDataArray[i].fowardColor);
             // 1. ルーレットの色データを生成
-            Color[] colors = GetStripeTable(
+            //Color[] colors = GetStripeTable(
+            //    colorDataArray[i].fowardColor,
+            //    colorDataArray[i].backwardColor,
+            //    colorDataArray[i].fowardRatio,
+            //    colorDataArray[i].divisionCount
+            //); 
+            Color[] colors = GetGradientStripeTable(
                 colorDataArray[i].fowardColor,
                 colorDataArray[i].backwardColor,
-                colorDataArray[i].fowardRatio,
+                //colorDataArray[i].fowardRatio,
                 colorDataArray[i].divisionCount
             );
             _wheelColorData.Add(colors);
