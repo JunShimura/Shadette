@@ -7,8 +7,18 @@ using UnityEngine;
 public class RouletteController : MonoBehaviour
 {
     [System.Serializable]
+    public enum RouletteColorType   // 色の配置方法
+    {
+        Random, // ランダムな色
+        PieChart, // 円グラフ状の色
+        GradientStripe, // グラデーションストライプ
+        Stripe // ストライプ模様
+    }
+
+    [System.Serializable]
     public struct RouletteColorData
     {
+        public RouletteColorType colorType; // 色の配置方法
         public Color fowardColor; // 360要素のColor
         public Color backwardColor; // 360要素のColor
         public float fowardRatio; // fowardColorの比率（0～1）
@@ -16,14 +26,15 @@ public class RouletteController : MonoBehaviour
         public int divisionCount; // 分割数
         public int baseSpeed; // 基本回転速度
         public int randomSpeed; // ランダム回転速度
-        public RouletteColorData(Color foward, Color backward, float fowardRatio, int division, int baseSpeed, int randomSpeed)
+        public RouletteColorData(RouletteColorType colorType,Color foward, Color backward, float fowardRatio, int division, int baseSpeed, int randomSpeed)
         {
-        this.fowardColor = foward;
-        this.backwardColor = backward;
-        this.fowardRatio = fowardRatio;
-        this.divisionCount = division;
-        this.baseSpeed = baseSpeed;
-        this.randomSpeed = randomSpeed;
+            this.colorType = colorType;
+            this.fowardColor = foward;
+            this.backwardColor = backward;
+            this.fowardRatio = fowardRatio;
+            this.divisionCount = division;
+            this.baseSpeed = baseSpeed;
+            this.randomSpeed = randomSpeed;
         }
     }
     [Tooltip("ルーレットの色データセット（ScriptableObject）")]
@@ -84,13 +95,37 @@ public class RouletteController : MonoBehaviour
             //    colorDataArray[i].fowardRatio,
             //    colorDataArray[i].divisionCount
             //); 
-            Color[] colors = GetGradientStripeTable(
-                colorDataArray[i].fowardColor,
-                colorDataArray[i].backwardColor,
-                //colorDataArray[i].fowardRatio,
-                colorDataArray[i].divisionCount
-            );
-            _wheelColorData.Add(colors);
+            Color[] colors;
+            switch(colorDataArray[i].colorType)
+            {
+                case RouletteColorType.Random:
+                    colors = GetRandomTable();
+                    break;
+                case RouletteColorType.PieChart:
+                    colors = GetPieChartTable(
+                        colorDataArray[i].fowardColor,
+                        colorDataArray[i].backwardColor,
+                        colorDataArray[i].fowardRatio
+                    );
+                    break;
+                case RouletteColorType.GradientStripe:
+                    colors = GetGradientStripeTable(
+                        colorDataArray[i].fowardColor,
+                        colorDataArray[i].backwardColor,
+                        colorDataArray[i].divisionCount
+                    );
+                    break;
+                case RouletteColorType.Stripe:
+                default:
+                    colors = GetStripeTable(
+                        colorDataArray[i].fowardColor,
+                        colorDataArray[i].backwardColor,
+                        colorDataArray[i].fowardRatio,
+                        colorDataArray[i].divisionCount
+                    );
+                    break;
+            }
+
 
             // 2. ルーレットのGameObjectを生成
             GameObject wheel = new GameObject($"RouletteWheel_{i}");
@@ -109,8 +144,8 @@ public class RouletteController : MonoBehaviour
             _rouletteWheels.Add(wheel);
             _rotationSpeeds.Add(
                 UnityEngine.Random.Range(
-                colorDataArray[i].baseSpeed -colorDataArray[i].randomSpeed,
-                colorDataArray[i].baseSpeed +colorDataArray[i].randomSpeed
+                colorDataArray[i].baseSpeed - colorDataArray[i].randomSpeed,
+                colorDataArray[i].baseSpeed + colorDataArray[i].randomSpeed
                     ));
         }
     }
@@ -128,6 +163,34 @@ public class RouletteController : MonoBehaviour
         }
         return colors;
     }
+    /// <summary>
+    /// 2色と比率で円グラフ状に色配列を生成します。
+    /// fowardRatioが0.75なら、360要素中270個がfowardColor、残りがbackwardColorになります。
+    /// </summary>
+    /// <param name="fowardColor">メインとなる色</param>
+    /// <param name="backwardColor">サブとなる色</param>
+    /// <param name="fowardRatio">メイン色の比率（0～1）</param>
+    /// <returns>360要素のColor配列</returns>
+    private Color[] GetPieChartTable(Color fowardColor, Color backwardColor, float fowardRatio)
+    {
+        Color[] colors = new Color[360];
+        int fowardCount = Mathf.RoundToInt(360 * Mathf.Clamp01(fowardRatio));
+        int backwardCount = 360 - fowardCount;
+
+        for (int i = 0; i < fowardCount; i++)
+        {
+            colors[i] = fowardColor;
+        }
+        for (int i = fowardCount; i < 360; i++)
+        {
+            colors[i] = backwardColor;
+        }
+        return colors;
+    }
+
+
+
+
 
     /// <summary>
     /// 2色をsinカーブでなだらかにグラデーションするストライプ模様のルーレット色配列を生成します。
@@ -164,45 +227,45 @@ public class RouletteController : MonoBehaviour
     /// <param name="color2">2色目の色</param>
     /// <param name="divisionCount">円をいくつの縞模様に分割するか</param>
     /// <returns>360要素のColor配列</returns>
-private Color[] GetStripeTable(Color color1, Color color2, float ratio, int divisionCount)
-{
-    if (divisionCount <= 0)
+    private Color[] GetStripeTable(Color color1, Color color2, float ratio, int divisionCount)
     {
-        Debug.LogError("分割数（divisionCount）は1以上である必要があります。");
-        divisionCount = 1;
-    }
-
-    Color[] colors = new Color[360];
-
-    // 1つのセグメントのサイズ
-    int segmentSize = 360 / divisionCount;
-    if (segmentSize == 0) segmentSize = 1;
-
-    int color1Length = Mathf.RoundToInt(segmentSize * ratio);
-    int color2Length = segmentSize - color1Length;
-
-    int idx = 0;
-    for (int seg = 0; seg < divisionCount; seg++)
-    {
-        // color1部分
-        for (int k = 0; k < color1Length && idx < 360; k++, idx++)
+        if (divisionCount <= 0)
         {
-            colors[idx] = color1;
+            Debug.LogError("分割数（divisionCount）は1以上である必要があります。");
+            divisionCount = 1;
         }
-        // color2部分
-        for (int k = 0; k < color2Length && idx < 360; k++, idx++)
-        {
-            colors[idx] = color2;
-        }
-    }
-    // 余りがあれば最後にcolor2で埋める
-    while (idx < 360)
-    {
-        colors[idx++] = color2;
-    }
 
-    return colors;
-}
+        Color[] colors = new Color[360];
+
+        // 1つのセグメントのサイズ
+        int segmentSize = 360 / divisionCount;
+        if (segmentSize == 0) segmentSize = 1;
+
+        int color1Length = Mathf.RoundToInt(segmentSize * ratio);
+        int color2Length = segmentSize - color1Length;
+
+        int idx = 0;
+        for (int seg = 0; seg < divisionCount; seg++)
+        {
+            // color1部分
+            for (int k = 0; k < color1Length && idx < 360; k++, idx++)
+            {
+                colors[idx] = color1;
+            }
+            // color2部分
+            for (int k = 0; k < color2Length && idx < 360; k++, idx++)
+            {
+                colors[idx] = color2;
+            }
+        }
+        // 余りがあれば最後にcolor2で埋める
+        while (idx < 360)
+        {
+            colors[idx++] = color2;
+        }
+
+        return colors;
+    }
 
 
     /// <summary>
