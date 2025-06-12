@@ -665,7 +665,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 997bf8ad2ee3c40de881df3a853f97cd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  rouletteColorDataSet: {fileID: 11400000, guid: d195c2ae5f2bfb44fae79f28bbfe680a, type: 2}
+  rouletteColorDataSet: {fileID: 11400000, guid: b88543e55e7d044d0b2dd3fc2f17373a, type: 2}
   layerGap: 0.1
 --- !u!1 &2081194138
 GameObject:

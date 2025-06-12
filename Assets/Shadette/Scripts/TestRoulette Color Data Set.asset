@@ -13,9 +13,10 @@ MonoBehaviour:
   m_Name: TestRoulette Color Data Set
   m_EditorClassIdentifier: 
   colorDataArray:
-  - fowardColor: {r: 1, g: 1, b: 1, a: 1}
-    backwardColor: {r: 1, g: 1, b: 1, a: 1}
-    fowardRatio: 1
+  - colorType: 1
+    fowardColor: {r: 1, g: 1, b: 1, a: 1}
+    backwardColor: {r: 0, g: 0, b: 0, a: 1}
+    fowardRatio: 0.75
     divisionCount: 1
     baseSpeed: 2
     randomSpeed: 0

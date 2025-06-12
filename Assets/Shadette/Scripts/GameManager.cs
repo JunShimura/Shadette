@@ -46,7 +46,7 @@ public class GameManager : MonoBehaviour
     private void DisplayScore()
     {
         // スコアを計算して表示
-        float score = rouletteController.GetScore();
+        float score = rouletteController.GetScore0digree();
         scoreText.text = $"SCORE:{score:F0}"; // F0は小数点以下なしの意味
         scoreText.gameObject.SetActive(true);
         arrowIndicator.SetActive(false); // 矢印を隠す

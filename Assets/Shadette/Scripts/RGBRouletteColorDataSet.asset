@@ -13,19 +13,22 @@ MonoBehaviour:
   m_Name: RGBRouletteColorDataSet
   m_EditorClassIdentifier: 
   colorDataArray:
-  - fowardColor: {r: 1, g: 0, b: 0, a: 1}
+  - colorType: 3
+    fowardColor: {r: 1, g: 0, b: 0, a: 1}
     backwardColor: {r: 0, g: 0, b: 0, a: 0}
     fowardRatio: 0.5
     divisionCount: 3
     baseSpeed: -100
     randomSpeed: 10
-  - fowardColor: {r: 0, g: 0, b: 1, a: 1}
+  - colorType: 3
+    fowardColor: {r: 0, g: 0, b: 1, a: 1}
     backwardColor: {r: 0, g: 0, b: 0, a: 0}
     fowardRatio: 0.25
     divisionCount: 5
     baseSpeed: 30
     randomSpeed: 3
-  - fowardColor: {r: 0, g: 1, b: 0, a: 1}
+  - colorType: 3
+    fowardColor: {r: 0, g: 1, b: 0, a: 1}
     backwardColor: {r: 0, g: 0, b: 0, a: 0}
     fowardRatio: 0.4
     divisionCount: 7

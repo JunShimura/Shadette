@@ -147,6 +147,7 @@ public class RouletteController : MonoBehaviour
                 colorDataArray[i].baseSpeed - colorDataArray[i].randomSpeed,
                 colorDataArray[i].baseSpeed + colorDataArray[i].randomSpeed
                     ));
+            _wheelColorData.Add(colors); // 追加
         }
     }
 
